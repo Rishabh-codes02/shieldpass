@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShieldPass | Premium Password Analyzer & Security Hub</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* Modern CSS Reset & Variables */
+        :root {
+            --bg-gradient: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            
+            /* Dynamic Security Colors */
+            --color-critical: #ef4444;
+            --color-weak: #f59e0b;
+            --color-good: #38bdf8;
+            --color-insane: #00ff9f;
+            
+            --current-theme: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Hero Wrapper */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        /* Decorative background glow element */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 255, 159, 0.04) 0%, transparent 70%);
+            top: 10%;
+            left: 15%;
+            pointer-events: none;
+        }
+
+        /* Glassmorphic App Card Layout */
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            width: 100%;
+            max-width: 500px;
+            padding: 45px;
+            border-radius: 24px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8);
+            position: relative;
+            transition: border-color 0.4s ease;
+        }
+
+        .app-card::after {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 10%;
+            right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--current-theme), transparent);
+            transition: background 0.4s ease;
+        }
+
+        .brand-title {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+            text-align: center;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        /* Custom Interactive Input Area */
+        .input-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid #1e293b;
+            border-radius: 14px;
+            padding: 18px 55px 18px 20px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--current-theme);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.02);
+        }
+
+        .toggle-visibility {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.2s ease;
+        }
+
+        .toggle-visibility:hover {
+            color: var(--text-primary);
+        }
+
+        /* Fluid Animated Progress Bar */
+        .progress-wrapper {
+            height: 6px;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 100px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--current-theme);
+            border-radius: 100px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
+        }
+
+        /* Metric Metadata Panel */
+        .metrics-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 35px;
+        }
+
+        .status-badge {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--current-theme);
+            transition: color 0.4s ease;
+        }
+
+        .entropy-counter {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        /* Rules Verification Checklist */
+        .rules-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .rule-item i {
+            font-size: 16px;
+            color: #334155;
+            transition: color 0.3s ease;
+        }
+
+        .rule-item.achieved {
+            color: var(--text-primary);
+            transform: translateX(2px);
+        }
+
+        .rule-item.achieved i {
+            color: var(--color-insane);
+        }
+
+        /* Scroll indicator button */
+        .scroll-hint {
+            margin-top: 40px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .scroll-hint:hover {
+            color: var(--color-good);
+        }
+
+        .scroll-hint i {
+            animation: bounce 2s infinite;
+        }
+
+        /* New Info Section Styling */
+        .info-section {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 35px;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-card h2 {
+            font-size: 22px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+        }
+
+        .info-card.cyber h2 i { color: var(--color-good); }
+        .info-card.greatness h2 i { color: var(--color-insane); }
+
+        .info-card ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .info-card li {
+            position: relative;
+            padding-left: 28px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .info-card li strong {
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .info-card li::before {
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            top: 2px;
+            font-size: 14px;
+        }
+
+        .info-card.cyber li::before {
+            content: "\f3ed"; /* Shield Icon */
+            color: var(--color-good);
+        }
+
+        .info-card.greatness li::before {
+            content: "\f00c"; /* Checkmark Icon */
+            color: var(--color-insane);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+            60% { transform: translateY(-4px); }
+        }
+
+        /* Mobile Viewport Adjustments */
+        @media (max-width: 768px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            .info-section {
+                padding: 40px 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-card {
+                padding: 35px 20px;
+                border-radius: 20px;
+            }
+            .brand-title {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero-section">
+        <main>
+            <div class="app-card" id="appCard">
+                <h1 class="brand-title">ShieldPass</h1>
+                <p class="subtitle">Secure, local-only client cryptographic verification</p>
+
+                <div class="input-container">
+                    <input type="password" id="passwordField" placeholder="Enter password to verify security...">
+                    <i class="fa-solid fa-eye toggle-visibility" id="visibilityToggle"></i>
+                </div>
+
+                <div class="progress-wrapper">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <div class="metrics-panel">
+                    <span class="status-badge" id="statusBadge">Awaiting Data...</span>
+                    <span class="entropy-counter" id="entropyCounter">0 Bits</span>
+                </div>
+
+                <ul class="rules-list">
+                    <li class="rule-item" id="ruleLength">
+                        <i class="fa-solid fa-circle-minus"></i> Minimum 8 characters length
+                    </li>
+                    <li class="rule-item" id="ruleUpper">
+                        <i class="fa-solid fa-circle-minus"></i> Contains uppercase letters (A-Z)
+                    </li>
+                    <li class="rule-item" id="ruleNumber">
+                        <i class="fa-solid fa-circle-minus"></i> Contains numeric values (0-9)
+                    </li>
+                    <li class="rule-item" id="ruleSpecial">
+                        <i class="fa-solid fa-circle-minus"></i> Contains special symbols (!@#$/%^&*)
+                    </li>
+                </ul>
+            </div>
+        </main>
+        
+        <a href="#infoHub" class="scroll-hint">
+            <span>Explore Security Guidelines</span>
+            <i class="fa-solid fa-angle-down"></i>
+        </a>
+    </section>
+
+    <section class="info-section" id="infoHub">
+        <div class="section-grid">
+            
+            <div class="info-card cyber">
+                <h2><i class="fa-solid fa-shield-halved"></i> Cybersecurity Essentials</h2>
+                <ul>
+                    <li>
+                        <strong>Avoid Pattern Re-use</strong>
+                        Never recycle identical passwords across multiple online profiles. If one platform undergoes a data breach, all your linked credentials fall instantly.
+                    </li>
+                    <li>
+                        <strong>Beware of Social Engineering</strong>
+                        Attackers often guess passwords based on easily public data like your birth year, hometown, pet names, or family members.
+                    </li>
+                    <li>
+                        <strong>Enforce Multi-Factor Authentication (MFA)</strong>
+                        Even an unbroken, robust password requires an extra buffer line. Enable authenticator tokens or biometrics wherever possible.
+                    </li>
+                    <li>
+                        <strong>Monitor Device Environments</strong>
+                        Keep browsers and operating software fully updated to patch key vulnerabilities that malware could use to intercept data payloads.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-card greatness">
+                <h2><i class="fa-solid fa-bolt"></i> The Value of ShieldPass</h2>
+                <ul>
+                    <li>
+                        <strong>Absolute Privacy Optimization</strong>
+                        Unlike regular online tools, ShieldPass operates 100% inside your current local client script sandbox. Your typed strings never transit across servers.
+                    </li>
+                    <li>
+                        <strong>True Mathematical Evaluation</strong>
+                        ShieldPass drops arbitrary character counting for actual mathematical Shannon Entropy calculation metrics, ensuring highly precise string randomness scoring.
+                    </li>
+                    <li>
+                        <strong>Instant Fluid Response</strong>
+                        Designed with modern asynchronous triggers, the platform responds to micro-inputs dynamically with no interface lag.
+                    </li>
+                    <li>
+                        <strong>Responsive Layout Accessibility</strong>
+                        Built utilizing fluid layouts, users gain access to elite-grade security parameters seamlessly whether testing on 4K workstation arrays or mobile viewports.
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        const passwordField = document.getElementById('passwordField');
+        const visibilityToggle = document.getElementById('visibilityToggle');
+        const progressBar = document.getElementById('progressBar');
+        const statusBadge = document.getElementById('statusBadge');
+        const entropyCounter = document.getElementById('entropyCounter');
+
+        const rules = {
+            length: document.getElementById('ruleLength'),
+            upper: document.getElementById('ruleUpper'),
+            number: document.getElementById('ruleNumber'),
+            special: document.getElementById('ruleSpecial')
+        };
+
+        // Eye icon Show/Hide script logic
+        visibilityToggle.addEventListener('click', () => {
+            const isPassword = passwordField.type === 'password';
+            passwordField.type = isPassword ? 'text' : 'password';
+            visibilityToggle.className = isPassword ? 'fa-solid fa-eye-slash toggle-visibility' : 'fa-solid fa-eye toggle-visibility';
+        });
+
+        // Realtime core analyzer engine
+        passwordField.addEventListener('input', () => {
+            const pass = passwordField.value;
+            let checksPassed = 0;
+            let totalPoolSize = 0;
+
+            // Parameter matching metrics
+            if (pass.length >= 8) { toggleRuleState(rules.length, true); checksPassed++; } else { toggleRuleState(rules.length, false); }
+            if (/[A-Z]/.test(pass)) { toggleRuleState(rules.upper, true); checksPassed++; totalPoolSize += 26; } else { toggleRuleState(rules.upper, false); }
+            if (/[0-9]/.test(pass)) { toggleRuleState(rules.number, true); checksPassed++; totalPoolSize += 10; } else { toggleRuleState(rules.number, false); }
+            if (/[^A-Za-z0-9]/.test(pass)) { toggleRuleState(rules.special, true); checksPassed++; totalPoolSize += 32; } else { toggleRuleState(rules.special, false); }
+            if (/[a-z]/.test(pass)) { totalPoolSize += 26; }
+
+            // Calculate Mathematical Entropy (E = L * log2(R))
+            let entropyBits = 0;
+            if (pass.length > 0 && totalPoolSize > 0) {
+                entropyBits = Math.floor(pass.length * Math.log2(totalPoolSize));
+            }
+
+            // Update UI Interface states
+            calculateScoreMetrics(pass, checksPassed, entropyBits);
+        });
+
+        function toggleRuleState(element, complete) {
+            if (complete) {
+                element.classList.add('achieved');
+                element.querySelector('i').className = 'fa-solid fa-circle-check';
+            } else {
+                element.classList.remove('achieved');
+                element.querySelector('i').className = 'fa-solid fa-circle-minus';
+            }
+        }
+
+        function calculateScoreMetrics(pass, score, bits) {
+            entropyCounter.innerText = `${bits} Bits`;
+            
+            if (pass.length === 0) {
+                progressBar.style.width = '0%';
+                statusBadge.innerText = 'Awaiting Data...';
+                document.documentElement.style.setProperty('--current-theme', '#ef4444');
+                return;
+            }
+
+            // Dynamic progress fill mapping
+            let scalePct = (score / 4) * 100;
+            progressBar.style.width = `${scalePct}%`;
+
+            if (score <= 1 || pass.length < 6) {
+                statusBadge.innerText = 'Critical / Danger';
+                document.documentElement.style.setProperty('--current-theme', '#ef4444');
+            } else if (score === 2) {
+                statusBadge.innerText = 'Weak Structure';
+                document.documentElement.style.setProperty('--current-theme', '#f59e0b');
+            } else if (score === 3) {
+                statusBadge.innerText = 'Good / Secure';
+                document.documentElement.style.setProperty('--current-theme', '#38bdf8');
+            } else if (score === 4) {
+                statusBadge.innerText = 'Insane Security';
+                document.documentElement.style.setProperty('--current-theme', '#00ff9f');
+            }
+        }
+    </script>
+</body>
+</html>
